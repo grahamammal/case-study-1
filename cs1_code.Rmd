@@ -1,0 +1,93 @@
+---
+title: "Case Study 1"
+author: "Ellen Graham"
+date: "9/22/2020"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(reshape2)
+```
+
+```{r}
+(basics <- read_tsv("us-movie-data/usa.movie.basics.tsv",
+                   col_names = c("tconst",
+                                 "titleType",
+                                 "primaryTitle",
+                                 "originalTitle",
+                                 "isAdult",
+                                 "startYear",
+                                 "endYear",
+                                 "runtimeMinutes",
+                                 "genres")))
+
+
+```
+
+```{r}
+animation_movies <- basics %>% 
+  filter(str_detect(genres, "Animation")) %>% 
+  select(tconst, primaryTitle) %>% 
+  rename(Id = tconst, Label = primaryTitle)
+```
+
+```{r}
+principles <- read_tsv("us-movie-data/usa.movie.principals.tsv",
+                   col_names = c("tconst",
+                                 "ordering",
+                                 "nconst",
+                                 "category",
+                                 "job",
+                                 "characters"))
+
+names <- read_tsv("us-movie-data/usa.movie.names.tsv",
+                   col_names = c("nconst",
+                                 "primaryName",
+                                 "birthYear",
+                                 "deathYear",
+                                 "primaryProfession",
+                                 "knownForTitles"))
+```
+
+```{r}
+animation_principles <- principles %>% 
+  select(tconst, nconst) %>% 
+  right_join(animation_movies, by = c("tconst" = "Id")) %>% 
+  left_join(names, by = "nconst")
+
+
+```
+
+```{r}
+listed_actors <- temp %>% 
+  na.omit() %>% 
+  group_by(tconst) %>% 
+  summarise(actors = paste0(nconst, sep = "", collapse = "_")) %>%
+  mutate(actors = str_split(actors, pattern = "_"))
+
+out_mat <- matrix(0, nrow = nrow(listed_actors), ncol = nrow(listed_actors), dimnames = list(listed_actors$tconst, listed_actors$tconst))
+
+for(i in 1:nrow(listed_actors)) {
+  for(j in 1:nrow(listed_actors)) {
+    if(i != j){
+      out_mat[i,j] = length(generics::intersect(listed_actors[["actors"]][[i]], listed_actors[["actors"]][[j]]))
+    }
+  }
+}
+sum(out_mat, na.rm = TRUE)
+
+edges <- melt(out_mat) %>% 
+  rename(Source = Var1, Target = Var2, Weight = value) %>% 
+  mutate(Type = "Undirected") %>% 
+  select(Source, Target, Type, Weight) %>% 
+  filter(Weight != 0)
+
+```
+
+```{r}
+write_csv(edges, "movie_edges.csv")
+write_csv(animation_movies, "movie_nodes.csv")
+```
+
