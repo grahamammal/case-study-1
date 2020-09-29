@@ -1,0 +1,137 @@
+---
+title: "AnimeNetwork"
+author: "Zhaoheng Li"
+date: "9/27/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+```{r}
+aniNet = read.csv("/Users/lizhaoheng/Desktop/RankedAnimeNetwork.csv")
+
+```
+
+
+```{r}
+aniNet$Degree = factor(aniNet$Degree)
+```
+
+```{r}
+aniNet$Weighted.Degree = factor(aniNet$Weighted.Degree)
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r}
+ggplot(aniNet,aes(x = Degree))+
+  geom_bar()+
+  ggtitle("Degree Distribution in Animation Networks")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+ggplot(aniNet,aes(x = Weighted.Degree))+
+  ggtitle("Weighted Degree Distribution in Animation Networks")+
+  geom_bar()+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+```{r}
+library(plyr)
+count = count(aniNet,'Degree')
+count$p = count$freq/280
+
+weighted.count = count(aniNet,'Weighted.Degree')
+weighted.count$p = weighted.count$freq/280
+
+```
+```{r}
+count
+weighted.count
+```
+
+
+```{r}
+# check power low
+ggplot(count,aes(x = log(as.numeric(Degree)), y =log(p)))+
+  geom_point()+
+  xlab("Log Degree")+
+  ylab("Log Probability")+
+  theme_minimal()+
+  ggtitle("Check Power Law for Degree Distribution")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(weighted.count,aes(x = log(as.numeric(Weighted.Degree)), y =log(p)))+
+  geom_point()+
+  xlab("Log Weighted Degree")+
+  ylab("Log Probability")+
+  theme_minimal()+
+  ggtitle("Check Power Law for Weighted Degree Distribution")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+```{r}
+mod = lm(log(p)~log(as.numeric(Weighted.Degree)),data = weighted.count)
+
+plot(log(numeric(Weighted.Degree)),log(p),data = weighted.count)
+abline(mod)
+```
+```{r}
+x = as.numeric(weighted.count$Weighted.Degree)
+y = weighted.count$p
+plot(log(x),log(y))
+abline(mod)
+```
+
+
+
+
+
+
+```{r}
+ggplot(aniNet,aes(x = closnesscentrality))+
+  geom_histogram()+
+  xlab("Closness Centrality")+
+  theme_minimal()+
+  ggtitle("Closeness Centrality Distribution")+
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+
+ggplot(aniNet,aes(x = betweenesscentrality))+
+  geom_histogram()+ 
+  xlab("Betweenness Centrality")+
+  scale_x_log10()+
+  theme_minimal()+
+  ggtitle("Log10 Transformed Betweenness Centrality Distribution")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(aniNet,aes(x = closnesscentrality, y =  betweenesscentrality))+
+  xlab("Closness Centrality")+
+  ylab("Betweenness Centrality")+
+  geom_point()+
+  scale_y_log10()+
+  theme_minimal()+
+  ggtitle("Comparison between Closeness and Log10 Transformed Betweenness Centrality")+
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+
