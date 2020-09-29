@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
-aniNet = read.csv("/Users/lizhaoheng/Desktop/RankedAnimeNetwork.csv")
+aniNet = read.csv("RankedAnimeNetwork.csv")
 
 ```
 
@@ -35,17 +35,33 @@ library(tidyverse)
 
 ```{r}
 ggplot(aniNet,aes(x = Degree))+
-  geom_bar()+
+  geom_histogram(aes(y = ..density..), boundary = 0, binwidth = 1)+
   ggtitle("Degree Distribution in Animation Networks")+
+  geom_function(fun = dexp, 
+                args = list(rate = .15),
+                color = "purple", size = 1) +
   theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  labs(subtitle = "Purple line is an Exp(0.15) distribution",
+       y = "Count") +
+  scale_y_continuous(
+    labels = seq(0, 20, length.out = 5))
 
-
-ggplot(aniNet,aes(x = Weighted.Degree))+
+aniNet %>% 
+  ggplot(aes(x = Weighted.Degree))+
   ggtitle("Weighted Degree Distribution in Animation Networks")+
-  geom_bar()+
+  geom_histogram(aes(y = ..density..), boundary = -0.01, binwidth = 2)+
+  geom_function(fun = dexp, 
+                args = list(rate = 0.08),
+                color = "purple", size = 1) +
   theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  labs(subtitle = "Purple line is an Exp(0.08) distribution",
+       y = "Count", 
+       x = "Weighted Degree") +
+  scale_y_continuous(labels = seq(0, 75, length.out = 6))
 
 ```
 
@@ -73,7 +89,10 @@ ggplot(count,aes(x = log(as.numeric(Degree)), y =log(p)))+
   ylab("Log Probability")+
   theme_minimal()+
   ggtitle("Check Power Law for Degree Distribution")+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) +
+  geom_smooth(se = FALSE, color = "purple") +
+  labs(subtitle = "Purple line is empirical line of best fit")
 
 ggplot(weighted.count,aes(x = log(as.numeric(Weighted.Degree)), y =log(p)))+
   geom_point()+
@@ -81,7 +100,9 @@ ggplot(weighted.count,aes(x = log(as.numeric(Weighted.Degree)), y =log(p)))+
   ylab("Log Probability")+
   theme_minimal()+
   ggtitle("Check Power Law for Weighted Degree Distribution")+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5)) + geom_smooth(se = FALSE, color = "purple") +
+  labs(subtitle = "Purple line is empirical line of best fit")
 ```
 
 
